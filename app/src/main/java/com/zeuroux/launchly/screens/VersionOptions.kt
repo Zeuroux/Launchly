@@ -199,7 +199,7 @@ fun VersionOptions(
                     TextButton(
                         onClick = {
                             val iconFile = File("${context.filesDir}/versions/${savedVersionData.installationId}/${
-                                if (savedVersionData.customIcon) "custom_icon" else "default_icon"
+                                if (customIcon) "custom_icon" else "default_icon"
                             }.png")
                             val bitmapDrawable: Drawable? = if (customIcon) {
                                 BitmapDrawable(context.resources, icon)

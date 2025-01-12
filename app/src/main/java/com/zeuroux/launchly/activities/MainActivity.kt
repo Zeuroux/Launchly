@@ -661,7 +661,7 @@ fun VersionItemLayout(
                     Text(savedVersionData.name, style = MaterialTheme.typography.titleLarge)
                     Info("Version: ${savedVersionData.versionName}, Code: ${savedVersionData.versionCode}")
                     Info("Type: ${savedVersionData.versionType}, Architecture: ${savedVersionData.architecture}")
-                    if (savedVersionData.patches.isNotEmpty()) Info("Patches: ${savedVersionData.patches.joinToString { it.patch }}")
+                    if (savedVersionData.patches.isNotEmpty()) Info("Patches: ${savedVersionData.patches.joinToString()}")
                     if (isDownloading) {
                         Info(
                             "Downloading... " +
