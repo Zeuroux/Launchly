@@ -13,4 +13,10 @@ idk, ask zex man how to build this shit
 - Discord: https://discord.gg/FZz68WWZM6/
 - Github Issues: https://github.com/zeuroux/launchly/issues/
 
+# Agreements
+- [Terms of Service](TERMS.md)
+- [Privacy Policy](POLICY.md)
+- [License](LICENSE)
+- [Disclaimer](DISCLAIMER.md)
+
 #### NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT
