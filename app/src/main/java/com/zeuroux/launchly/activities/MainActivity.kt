@@ -88,6 +88,7 @@ import androidx.wear.compose.material.FractionalThreshold
 import androidx.wear.compose.material.SwipeableState
 import androidx.wear.compose.material.rememberSwipeableState
 import androidx.wear.compose.material.swipeable
+import com.dzeio.crashhandler.CrashHandler
 import com.zeuroux.launchly.broadcast_receivers.PackageStatusReceiver
 import com.zeuroux.launchly.screens.Onboarding
 import com.zeuroux.launchly.screens.SettingsDialog
@@ -132,6 +133,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        CrashHandler.Builder()
+            .withContext(this).build().setup()
         filesDir.walk().forEach {
             if (it.isFile && it.name.endsWith(".temp")) {
                 it.delete()

@@ -77,4 +77,5 @@ dependencies {
     implementation libs.ackpine.splits
     implementation libs.androidx.compose.foundation
     implementation libs.android.image.cropper
+    implementation libs.crashhandler
 }
