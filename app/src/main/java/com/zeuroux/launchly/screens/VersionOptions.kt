@@ -201,14 +201,10 @@ fun VersionOptions(
                             val iconFile = File("${context.filesDir}/versions/${savedVersionData.installationId}/${
                                 if (customIcon) "custom_icon" else "default_icon"
                             }.png")
-                            val bitmapDrawable: Drawable? = if (customIcon) {
+                            val bitmapDrawable: Drawable? = if (customIcon && icon != null) {
                                 BitmapDrawable(context.resources, icon)
                             } else {
-                                try {
-                                    context.packageManager.getApplicationIcon("com.mojang.minecraftpe")
-                                } catch (_: Exception) {
-                                    null
-                                }
+                                null
                             }
                             if (bitmapDrawable != null) {
                                 saveIconToFile(
