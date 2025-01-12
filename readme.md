@@ -7,7 +7,13 @@ Supported Android Versions: Android 8 (Oreo) - Android 15 (Vanilla Ice Cream)<br
 Supported ABIs: armeabi-v7a, arm64-v8a, x86, x86-64
 
 # Building and Contributing
-idk, ask zex man how to build this shit
+
+- Building
+Just chuck it in android studio and hope for the best
+- Contributing
+Fork
+Commit
+Pull request
 
 # Support
 - Discord: https://discord.gg/FZz68WWZM6/
