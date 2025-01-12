@@ -31,7 +31,7 @@ data class SavedVersionData(
     val versionType: VersionType,
     val architecture: Architecture,
     val status: Status,
-    val patches: List<Patch>,
+    val patches: List<String>,
     val customIcon: Boolean,
     val dateModified: Long
 ) : Serializable
@@ -62,12 +62,6 @@ enum class Status {
     DOWNLOADING,
     NOT_INSTALLED,
     NOT_DOWNLOADED
-}
-
-enum class Patch(val patch: String) {
-    EXTERNAL_STORAGE("ExternalStorage"),
-    MATERIALBINLOADER2("MaterialBinLoader2"),
-    MODLOADER("ModLoader")
 }
 
 class VersionDatabaseHelper(context: Context) :
@@ -107,7 +101,7 @@ class VersionDatabaseHelper(context: Context) :
                 put("versionType", savedVersionData.versionType.name)
                 put("architecture", savedVersionData.architecture.name)
                 put("status", savedVersionData.status.name)
-                put("patches", savedVersionData.patches.joinToString(",") { it.name })
+                put("patches", savedVersionData.patches.joinToString(","))
                 put("customIcon", savedVersionData.customIcon)
                 put("dateModified", savedVersionData.dateModified)
             }
@@ -126,10 +120,6 @@ class VersionDatabaseHelper(context: Context) :
         readableDatabase.use { db ->
             db.query("versions", null, null, null, null, null, null).use { cursor ->
                 while (cursor.moveToNext()) {
-                    val patches = cursor.getString(cursor.getColumnIndexOrThrow("patches"))
-                        .split(",")
-                        .mapNotNull { name -> Patch.entries.find { it.name == name } }
-
                     savedVersions.add(
                         SavedVersionData(
                             installationId = cursor.getString(cursor.getColumnIndexOrThrow("id")),
@@ -139,7 +129,8 @@ class VersionDatabaseHelper(context: Context) :
                             versionType = VersionType.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("versionType"))),
                             architecture = Architecture.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("architecture"))),
                             status = Status.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("status"))),
-                            patches = patches,
+                            patches = cursor.getString(cursor.getColumnIndexOrThrow("patches"))
+                                .split(","),
                             customIcon = cursor.getInt(cursor.getColumnIndexOrThrow("customIcon")) == 1,
                             dateModified = cursor.getLong(cursor.getColumnIndexOrThrow("dateModified"))
                         )
@@ -159,7 +150,7 @@ class VersionDatabaseHelper(context: Context) :
                 put("versionType", savedVersionData.versionType.name)
                 put("architecture", savedVersionData.architecture.name)
                 put("status", savedVersionData.status.name)
-                put("patches", savedVersionData.patches.joinToString(",") { it.name })
+                put("patches", savedVersionData.patches.joinToString(","))
                 put("customIcon", savedVersionData.customIcon)
                 put("dateModified", savedVersionData.dateModified)
             }
