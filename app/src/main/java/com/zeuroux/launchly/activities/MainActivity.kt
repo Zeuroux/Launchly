@@ -444,7 +444,6 @@ fun DownloadedVersions(
                         it.copy(status = status),
                         versionDbViewModel
                     )
-                    versionDbViewModel.loadSavedVersions(context)
                 }
             }
         }
