@@ -8,16 +8,9 @@ Supported ABIs: armeabi-v7a, arm64-v8a, x86, x86-64
 
 # Building and Contributing
 
-- Building
+- Building - just chuck it in android studio and hope for the best
+- Contributing - fork, commit, open a pull request
 
-Just chuck it in android studio and hope for the best
-- Contributing
-
-Fork
-
-Commit
-
-Pull request
 
 # Support
 - Discord: https://discord.gg/FZz68WWZM6/
