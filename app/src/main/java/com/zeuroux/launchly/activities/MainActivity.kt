@@ -79,6 +79,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -150,14 +151,17 @@ class MainActivity : ComponentActivity() {
                     composable("onboarding") {
                         if (!onboardingComplete) {
                             val removes = mutableListOf<String>()
-                            if (!packageManager.canRequestPackageInstalls()) {
+                            if (packageManager.canRequestPackageInstalls()) {
                                 removes.add("Permissions")
+                                println("Permissions")
                             }
-                            if (!accountPreferences.contains("accountName")) {
+                            if (!accountPreferences.getString("accountEmail", null).isNullOrEmpty()) {
                                 removes.add("SignIn")
+                                println("SignIn")
                             }
-                            if (sharedPreferences.getBoolean("first_run", true)) {
+                            if (!sharedPreferences.getBoolean("first_run", true)) {
                                 removes.add("Start")
+                                println("Start")
                             }
                             Onboarding(
                                 onFinish = {
@@ -177,7 +181,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     composable("main") {
-                        Main()
+                        Main(navController)
                     }
                 }
             }
@@ -187,7 +191,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Main() {
+fun Main(navHostController: NavHostController) {
     val context = LocalContext.current
     val versionDbHelper = VersionDatabaseHelper(context)
     val versionDbViewModel: VersionDatabaseViewModel = viewModel()
@@ -299,6 +303,7 @@ fun Main() {
 
         SettingsDialog(
             showDialog = showSettings.value,
+            navHostController = navHostController,
             userProfileInfo = userProfileInfo,
             onDismissRequest = { showSettings.value = false }
         )
@@ -582,7 +587,6 @@ fun VersionItemLayout(
             )
             .padding(8.dp)
     ) {
-        println(swipeableState.offset.value)
         Row(
             modifier = Modifier
                 .fillMaxHeight()

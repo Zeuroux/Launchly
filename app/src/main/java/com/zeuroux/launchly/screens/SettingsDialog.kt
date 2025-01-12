@@ -1,5 +1,9 @@
 package com.zeuroux.launchly.screens
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -19,10 +23,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AllInbox
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,21 +45,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 
 
+@SuppressLint("ApplySharedPref")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsDialog(showDialog: Boolean, userProfileInfo: List<String?>, onDismissRequest: () -> Unit) {
+fun SettingsDialog(showDialog: Boolean, navHostController: NavHostController, userProfileInfo: List<String?>, onDismissRequest: () -> Unit) {
+    val context = LocalContext.current
+
     var animateIn by remember { mutableStateOf(false) }
     var showAnimatedDialog by remember { mutableStateOf(false) }
     var showAppSettings by remember { mutableStateOf(false) }
+    var showConfirmationDialog by remember { mutableStateOf(false) }
     LaunchedEffect(showDialog) {
         if (showDialog) showAnimatedDialog = true
     }
@@ -115,25 +123,29 @@ fun SettingsDialog(showDialog: Boolean, userProfileInfo: List<String?>, onDismis
                                 }
                             }
                             OutlinedButton (
-                                onClick = {},
+                                onClick = {
+                                    showConfirmationDialog = true
+                                },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("Manage your account")
+                                Text("Log out")
                             }
                         }
                     }
                     Column(modifier= Modifier.padding(0.dp, 8.dp)) {
-                        Setting_Option("Manage Installations", Icons.Default.AllInbox) {
-
-                        }
-                        Setting_Option("Show Logs", Icons.Default.Terminal) {
-
-                        }
+//                        Setting_Option("Manage Installations", Icons.Default.AllInbox) {
+//
+//                        }
+//                        Setting_Option("Show Logs", Icons.Default.Terminal) {
+//
+//                        }
                         Setting_Option("Settings", Icons.Default.Settings) {
                             showAppSettings = true
                         }
                         Setting_Option("About", Icons.Default.Info) {
-
+                            val intent = Intent(Intent.ACTION_VIEW)
+                            intent.data = Uri.parse("https://github.com/Zeuroux/Launchly/blob/master/README.md")
+                            context.startActivity(intent)
                         }
                     }
                     Text(
@@ -172,6 +184,20 @@ fun SettingsDialog(showDialog: Boolean, userProfileInfo: List<String?>, onDismis
         showAppSettings = false
     })
 
+    ConfirmationDialog(
+        title = "Log out",
+        description = "Are you sure you want to log out?",
+        onConfirmation = {
+            context.getSharedPreferences("accountData", Context.MODE_PRIVATE).edit().clear().commit()
+            context.getSharedPreferences("onboarding", Context.MODE_PRIVATE).edit().putBoolean("onboarding_complete", false)
+                .commit()
+            navHostController.navigate("onboarding")
+        },
+        showDialog = showConfirmationDialog,
+        onDismiss = {
+            showConfirmationDialog = false
+        }
+    )
 }
 @Composable
 fun Setting_Option(title: String, icon: ImageVector, onClick: () -> Unit) {
@@ -181,13 +207,13 @@ fun Setting_Option(title: String, icon: ImageVector, onClick: () -> Unit) {
             .height(50.dp)
             .clickable {
                 onClick()
-            }.padding(12.dp, 0.dp),
+            }.padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             icon,
             title,
-            Modifier.size(24.dp)
+            Modifier.padding(end = 12.dp).size(24.dp)
         )
         Text(title)
     }

@@ -463,8 +463,6 @@ fun ReactiveLinear(content: @Composable () -> Unit) {
 
 }
 
-
-
 @Composable
 fun IndexIndicator(
     modifier: Modifier = Modifier,

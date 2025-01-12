@@ -62,9 +62,13 @@ object GPlayAPI {
 
     suspend fun getUserProfileInfo(context: Context): List<String?> {
         return withContext(Dispatchers.IO) {
-            val authData = getAuthData(context)
-            val userProfile = UserProfileHelper(authData).getUserProfile()
-            listOf(userProfile?.name, userProfile?.email, userProfile?.artwork?.url)
+            try {
+                val authData = getAuthData(context)
+                val userProfile = UserProfileHelper(authData).getUserProfile()
+                listOf(userProfile?.name, userProfile?.email, userProfile?.artwork?.url)
+            } catch (e: Exception) {
+                emptyList()
+            }
         }
     }
 
