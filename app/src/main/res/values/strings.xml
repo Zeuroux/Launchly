@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Launchly</string>
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Welcome to Launchly</string>
+    <string name="onboarding_description_1">A legal Minecraft Pocket Edition version switcher</string>
+    <string name="onboarding_source_code">Source Code</string>
+    <string name="onboarding_source_code_description">Look Inside the septic tank</string>
+    <string name="onboarding_license">License</string>
+    <string name="onboarding_license_description">The GNU General Public License v3.0</string>
+    <string name="onboarding_privacy_policy">Privacy Policy</string>
+    <string name="onboarding_privacy_policy_description">Learn how Launchly uses your data</string>
+    <string name="onboarding_disclaimer">Disclaimer</string>
+    <string name="onboarding_disclaimer_description">Accountability and responsibility</string>
+    <string name="onboarding_title_2">Sign in with Google</string>
+    <string name="onboarding_description_2">Sign in with the Google account you used to buy Minecraft Pocket Edition on Google Play Store</string>
+    <string name="onboarding_title_3">Allow Permissions</string>
+    <string name="onboarding_description_3">You need to allow permissions for the version switcher to work properly</string>
+    <string name="onboarding_title_4">You\'re all set!</string>
+    <string name="onboarding_description_4">You are now ready to use Launchly</string>
+    <string name="onboarding_warning">Bro chill, do the thing</string>
+    <string name="onboarding_sign_in">Sign in with Google</string>
+    <string name="onboarding_signed_in">Signed in as %1$s</string>
+    <string name="onboarding_allow_permissions">Allow Permissions</string>
+</resources>
