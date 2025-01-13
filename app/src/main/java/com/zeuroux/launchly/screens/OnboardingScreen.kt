@@ -55,6 +55,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,8 +75,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.zeuroux.launchly.R
 import com.zeuroux.launchly.activities.LoginActivity
+import com.zeuroux.launchly.utils.GPlayAPI.getUserProfileArtwork
+import kotlinx.coroutines.launch
 
 
 data class OnBoardModel(
@@ -292,13 +296,14 @@ fun GoogleSignInButton(context: Context, preventForwardAt: MutableIntState) {
         textAlign = TextAlign.Center,
     )
     val sharedPreferences = context.getSharedPreferences("accountData", Context.MODE_PRIVATE)
-
+    var userProfile by remember { mutableStateOf("") }
     var accountName by remember {
         mutableStateOf(sharedPreferences.getString("accountName", null))
     }
     var accountEmail by remember {
         mutableStateOf(sharedPreferences.getString("accountEmail", null))
     }
+    val scope = rememberCoroutineScope()
 
     val resultLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -308,17 +313,23 @@ fun GoogleSignInButton(context: Context, preventForwardAt: MutableIntState) {
             val newAccountName = data?.getStringExtra("accountName")
             val newAccountEmail = data?.getStringExtra("accountEmail")
             val accountToken = data?.getStringExtra("accountToken")
+            if (newAccountName != null && newAccountEmail != null && accountToken != null) {
+                accountName = newAccountName
+                accountEmail = newAccountEmail
 
-            accountName = newAccountName
-            accountEmail = newAccountEmail
-
-            with(sharedPreferences.edit()) {
-                putString("accountName", newAccountName)
-                putString("accountEmail", newAccountEmail)
-                putString("accountToken", accountToken)
-                apply()
+                with(sharedPreferences.edit()) {
+                    putString("accountName", newAccountName)
+                    putString("accountEmail", newAccountEmail)
+                    putString("accountToken", accountToken)
+                    commit()
+                }
+                scope.launch {
+                    userProfile = getUserProfileArtwork(context)!!
+                }
+                preventForwardAt.intValue = -1
+            } else {
+                Toast.makeText(context, "Sign in failed, Try again", Toast.LENGTH_SHORT).show()
             }
-            preventForwardAt.intValue = -1
         }
     }
 
@@ -332,14 +343,28 @@ fun GoogleSignInButton(context: Context, preventForwardAt: MutableIntState) {
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(R.drawable.ic_google),
-            contentDescription = null,
-            modifier = Modifier
-                .padding(end = 8.dp)
-                .size(24.dp)
-        )
+        if (userProfile.isEmpty()) {
+            Image(
+                painter = painterResource(R.drawable.ic_google),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .size(24.dp)
+            )
+        } else {
+            AsyncImage(
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .clip(CircleShape)
+                    .size(30.dp),
+                model = userProfile,
+                contentDescription = "User Profile"
+            )
+        }
         if (accountName != null) {
+            LaunchedEffect(Unit) {
+                userProfile = getUserProfileArtwork(context)!!
+            }
             Column(Modifier.padding(end = 8.dp)) {
                 Text(
                     text = stringResource(R.string.onboarding_signed_in, accountName!!),

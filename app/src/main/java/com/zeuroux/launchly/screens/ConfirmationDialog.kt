@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConfirmationDialog(showDialog: Boolean, title: String, description:String, onConfirmation: () -> Unit, onDismiss: () -> Unit) {
+fun ConfirmationDialog(showDialog: Boolean, title: String, description:String, onConfirmation: () -> Unit, onDismiss: () -> Unit, confirmText : String) {
     var animateIn by remember { mutableStateOf(false) }
     var showAnimatedDialog by remember { mutableStateOf(false) }
     LaunchedEffect(showDialog) {
@@ -96,7 +96,7 @@ fun ConfirmationDialog(showDialog: Boolean, title: String, description:String, o
                             modifier = Modifier
                                 .padding(top = 16.dp)
                         ) {
-                            Text("Save")
+                            Text(confirmText)
                         }
                     }
                 }

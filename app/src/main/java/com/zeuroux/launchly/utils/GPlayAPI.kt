@@ -72,6 +72,18 @@ object GPlayAPI {
         }
     }
 
+    suspend fun getUserProfileArtwork(context: Context): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val authData = getAuthData(context)
+                val userProfile = UserProfileHelper(authData).getUserProfile()
+                userProfile?.artwork?.url
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
     private fun getNativeDeviceProperties(context: Context, isExport: Boolean = false): Properties {
         val properties = Properties().apply {
             setProperty("UserReadableName", "${Build.MANUFACTURER} ${Build.MODEL}")

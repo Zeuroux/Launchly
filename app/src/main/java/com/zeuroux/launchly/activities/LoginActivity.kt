@@ -92,7 +92,7 @@ class LoginActivity : Activity() {
             asyncTask.join()
             if (authToken.isNotEmpty()) {
                 val intent = Intent().apply {
-                    putExtra("accountName", authToken["firstName"])
+                    putExtra("accountName", authToken["firstName"] + " " + authToken["lastName"])
                     putExtra("accountEmail", authToken["Email"])
                     putExtra("accountToken", authToken["Token"])
                 }

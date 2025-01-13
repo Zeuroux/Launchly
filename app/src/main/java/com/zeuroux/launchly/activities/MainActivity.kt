@@ -6,6 +6,7 @@ import android.content.IntentFilter
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -90,6 +91,7 @@ import androidx.wear.compose.material.rememberSwipeableState
 import androidx.wear.compose.material.swipeable
 import com.dzeio.crashhandler.CrashHandler
 import com.zeuroux.launchly.broadcast_receivers.PackageStatusReceiver
+import com.zeuroux.launchly.screens.ConfirmationDialog
 import com.zeuroux.launchly.screens.Onboarding
 import com.zeuroux.launchly.screens.SettingsDialog
 import com.zeuroux.launchly.screens.VersionOptions
@@ -156,15 +158,12 @@ class MainActivity : ComponentActivity() {
                             val removes = mutableListOf<String>()
                             if (packageManager.canRequestPackageInstalls()) {
                                 removes.add("Permissions")
-                                println("Permissions")
                             }
                             if (!accountPreferences.getString("accountEmail", null).isNullOrEmpty()) {
                                 removes.add("SignIn")
-                                println("SignIn")
                             }
                             if (!sharedPreferences.getBoolean("first_run", true)) {
                                 removes.add("Start")
-                                println("Start")
                             }
                             Onboarding(
                                 onFinish = {
@@ -480,13 +479,13 @@ fun VersionItem(
     val downloader = remember(savedVersionData.installationId) { Downloader(client) }
     val scope = rememberCoroutineScope()
     val isRemoving = remember { mutableStateOf(false) }
+    val attemptRemove = remember { mutableStateOf(false) }
     val isPaused = remember { mutableStateOf(false) }
     val downloadProgress = remember { mutableFloatStateOf(0f) }
     val downloadSpeed = remember { mutableFloatStateOf(0f) }
     val downloadEta = remember { mutableFloatStateOf(0f) }
     val installProgress = remember { mutableIntStateOf(-1) }
     val isLoading = remember { mutableStateOf(false) }
-
     val animatedAlpha by animateFloatAsState(
         targetValue = if (isRemoving.value) 0f else 1f,
         label = "alpha",
@@ -497,6 +496,21 @@ fun VersionItem(
             }
         }
     )
+
+    ConfirmationDialog(
+        title = "Remove version",
+        description = "Are you sure you want to remove this version?",
+        onConfirmation = {
+            isRemoving.value = true
+            attemptRemove.value = false
+        },
+        showDialog = attemptRemove.value,
+        onDismiss = {
+            attemptRemove.value = false
+        },
+        confirmText = "Remove"
+    )
+
 
     VersionItemLayout(
         savedVersionData = savedVersionData,
@@ -525,7 +539,7 @@ fun VersionItem(
                         downloadEta,
                         isPaused,
                         installProgress,
-                        isRemoving,
+                        attemptRemove,
                         isLoading,
                         packageName,
                         isUpdating,
@@ -592,7 +606,7 @@ fun VersionItemLayout(
         Row(
             modifier = Modifier
                 .fillMaxHeight()
-                .width( with(density) { maxWidth.toDp() - 10.dp} )
+                .width(with(density) { maxWidth.toDp() - 10.dp })
                 .align(Alignment.CenterEnd)
                 .offset {
                     val offsetX = (swipeableState.offset.value + maxWidth) * 1.5
@@ -795,7 +809,7 @@ suspend fun handleVersionAction(
     downloadEta: MutableFloatState,
     isPaused: MutableState<Boolean>,
     installProgress: MutableIntState,
-    isRemoving: MutableState<Boolean>,
+    attemptRemove: MutableState<Boolean>,
     isLoading: MutableState<Boolean>,
     packageName: String,
     isUpdating: MutableState<Boolean>,
@@ -804,43 +818,49 @@ suspend fun handleVersionAction(
 ) {
     when (action) {
         is VersionAction.StartDownload -> {
-            updateStatus(Status.DOWNLOADING)
             var totalSize = 0L
-            val urlToFileNameMap = getApks(savedVersionData.versionCode.toInt(), context).associate { apk ->
-                totalSize += apk.size
-                apk.name to apk.url
-            }
-            downloader.startDownload(
-                urlToFileNameMap,
-                File("${context.filesDir}/versions/${savedVersionData.installationId}")
-            ) { status ->
-                when (status) {
-                    is Downloader.DownloadStatus.OnProgress -> {
-                        downloadProgress.floatValue = (status.downloadedSize * 100f) / totalSize
-                        downloadSpeed.floatValue = status.speed
-                        downloadEta.floatValue = ((totalSize - status.downloadedSize) / 1024 / 1024) / status.speed
+            try {
+                val urlToFileNameMap =
+                    getApks(savedVersionData.versionCode.toInt(), context).associate { apk ->
+                        totalSize += apk.size
+                        apk.name to apk.url
                     }
+                updateStatus(Status.DOWNLOADING)
+                downloader.startDownload(
+                    urlToFileNameMap,
+                    File("${context.filesDir}/versions/${savedVersionData.installationId}")
+                ) { status ->
+                    when (status) {
+                        is Downloader.DownloadStatus.OnProgress -> {
+                            downloadProgress.floatValue = (status.downloadedSize * 100f) / totalSize
+                            downloadSpeed.floatValue = status.speed
+                            downloadEta.floatValue = ((totalSize - status.downloadedSize) / 1024 / 1024) / status.speed
+                        }
 
-                    is Downloader.DownloadStatus.OnFinish -> {
-                        println("Download completed. Files: ${status.files}")
-                        updateStatus(Status.NOT_INSTALLED)
-                    }
+                        is Downloader.DownloadStatus.OnFinish -> {
+                            println("Download completed. Files: ${status.files}")
+                            updateStatus(Status.NOT_INSTALLED)
+                        }
 
-                    is Downloader.DownloadStatus.OnFailure -> {
-                        println("Failed to download ${status.fileName}: ${status.failureReason}")
-                        updateStatus(Status.NOT_DOWNLOADED)
-                    }
+                        is Downloader.DownloadStatus.OnFailure -> {
+                            println("Failed to download ${status.fileName}: ${status.failureReason}")
+                            updateStatus(Status.NOT_DOWNLOADED)
+                        }
 
-                    is Downloader.DownloadStatus.OnCancel -> {
-                        println("Download cancelled for file: ${status.fileName}")
-                        updateStatus(Status.NOT_DOWNLOADED)
-                    }
+                        is Downloader.DownloadStatus.OnCancel -> {
+                            println("Download cancelled for file: ${status.fileName}")
+                            updateStatus(Status.NOT_DOWNLOADED)
+                        }
 
-                    is Downloader.DownloadStatus.OnDownloadSuccess -> {
-                        println("Successfully downloaded: ${status.fileName}")
+                        is Downloader.DownloadStatus.OnDownloadSuccess -> {
+                            println("Successfully downloaded: ${status.fileName}")
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                Toast.makeText(context, "This account didn't buy Minecraft, is this the right Account?", Toast.LENGTH_SHORT).show()
             }
+
         }
         is VersionAction.CancelDownload -> {
             downloader.cancelAll()
@@ -934,7 +954,7 @@ suspend fun handleVersionAction(
                 }
             } else {
                 println("Removing ${savedVersionData.name}")
-                isRemoving.value = true
+                attemptRemove.value = true
             }
         }
     }

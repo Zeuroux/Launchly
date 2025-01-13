@@ -188,6 +188,7 @@ fun SettingsDialog(showDialog: Boolean, navHostController: NavHostController, us
         title = "Log out",
         description = "Are you sure you want to log out?",
         onConfirmation = {
+            showConfirmationDialog = false
             context.getSharedPreferences("accountData", Context.MODE_PRIVATE).edit().clear().commit()
             context.getSharedPreferences("onboarding", Context.MODE_PRIVATE).edit().putBoolean("onboarding_complete", false)
                 .commit()
@@ -196,7 +197,8 @@ fun SettingsDialog(showDialog: Boolean, navHostController: NavHostController, us
         showDialog = showConfirmationDialog,
         onDismiss = {
             showConfirmationDialog = false
-        }
+        },
+        confirmText = "Log out"
     )
 }
 @Composable
