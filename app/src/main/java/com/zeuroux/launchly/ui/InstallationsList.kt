@@ -27,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,17 +49,19 @@ lateinit var versions: Map<String, VersionData>
 fun InstallationList(installations: MutableList<Installation>) {
     versions = GlobalData.getVersionDB(LocalContext.current).versions.collectAsState().value
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val visibleInstallations = remember { mutableStateListOf<Installation>() }
     val pendingRemoval = remember { mutableStateListOf<Installation>() }
     LaunchedEffect(installations.size) {
-        installations.forEach { installation ->
-            if (!visibleInstallations.contains(installation) && !pendingRemoval.contains(installation)) {
-                delay(100)
-                visibleInstallations.add(installation)
-            }
+        val newInstallations = installations.filter {
+            it !in visibleInstallations && it !in pendingRemoval
+        }
+
+        newInstallations.forEach { installation ->
+            delay(100)
+            visibleInstallations.add(installation)
         }
     }
+
     LazyColumn {
         items(installations) { installation ->
             AnimatedVisibility(
@@ -90,7 +91,7 @@ fun InstallationCard(installation: Installation, onRemove: () -> Unit) {
     ) {
         Row(
             Modifier
-                .height(70.dp)
+                .height(85.dp)
                 .fillMaxWidth()
                 .clickable { onRemove() }
                 .padding(8.dp),
@@ -106,6 +107,7 @@ fun InstallationCard(installation: Installation, onRemove: () -> Unit) {
         }
     }
 }
+
 @Composable
 private fun InstallationIcon(installation: Installation) {
     AsyncImage(

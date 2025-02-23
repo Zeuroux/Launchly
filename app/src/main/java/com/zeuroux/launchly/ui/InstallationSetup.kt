@@ -64,7 +64,7 @@ fun InstallationSetup(onSetupComplete: (Installation) -> Unit = {}) {
     val latestRelease = versionDb.latestRelease.collectAsState().value
     val showInstallationSetup = GlobalData.showInstallationSetup
     val icon = remember { mutableStateOf<Bitmap?>(null) }
-    LaunchedEffect(showInstallationSetup) {
+    LaunchedEffect(showInstallationSetup.value) {
         icon.value = R.drawable.grass.toBitmap(context)
     }
     val showTypePicker = remember { mutableStateOf(false) }

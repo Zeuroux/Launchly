@@ -52,7 +52,7 @@ class VersionDB(private val client: OkHttpClient, private val dataDir: File) : V
             _isLoading.value = true
             _error.value = null
             val tempVersions = mutableMapOf<String, VersionData>()
-
+            var tempLatestRelease: Pair<String, VersionData> = "0" to VersionData("", "", "")
             try {
                 architectures.forEach { arch ->
                     val request = Request.Builder()
@@ -71,13 +71,13 @@ class VersionDB(private val client: OkHttpClient, private val dataDir: File) : V
                 }
                 _versions.value = tempVersions
                 dataDir.resolve("versions.json").writeText(tempVersions.toJsonString())
-                tempVersions.toSortedMap(compareBy { it.toLong() }).forEach {
-                    if (it.value.type == "Release") {
-                        _latestRelease.value = it.key to it.value
-                        dataDir.resolve("latestRelease.json").writeText(_latestRelease.value!!.toJsonString())
+                tempVersions.toSortedMap().forEach {
+                    if (it.value.type == "Release" && it.key.toLong() >= tempLatestRelease.first.toLong()) {
+                        tempLatestRelease = it.key to it.value
                         return@forEach
                     }
                 }
+                dataDir.resolve("latestRelease.json").writeText(_latestRelease.value!!.toJsonString())
             } catch (e: Exception) {
                 _error.value = e.localizedMessage
                 e.printStackTrace()
